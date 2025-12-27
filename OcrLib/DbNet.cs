@@ -1,4 +1,4 @@
-﻿using ClipperLib;
+﻿using Clipper2Lib;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -317,11 +317,10 @@ namespace OcrLiteLib
                 return null;
             }
 
-            List<IntPoint> theCliperPts = new List<IntPoint>();
+            Path64 theCliperPts = new Path64();
             foreach (PointF pt in box)
             {
-                IntPoint a1 = new IntPoint((int)pt.X, (int)pt.Y);
-                theCliperPts.Add(a1);
+                theCliperPts.Add(new Point64((long)pt.X, (long)pt.Y));
             }
 
             float area = Math.Abs(SignedPolygonArea(box.ToArray<PointF>()));
@@ -329,16 +328,16 @@ namespace OcrLiteLib
             double distance = area * unclip_ratio / length;
 
             ClipperOffset co = new ClipperOffset();
-            co.AddPath(theCliperPts, JoinType.jtRound, EndType.etClosedPolygon);
-            List<List<IntPoint>> solution = new List<List<IntPoint>>();
-            co.Execute(ref solution, distance);
+            co.AddPath(theCliperPts, JoinType.Round, EndType.Polygon);
+            Paths64 solution = new Paths64();
+            co.Execute(distance, solution);
             if (solution.Count == 0)
             {
                 return null;
             }
 
             List<Point> retPts = new List<Point>();
-            foreach (IntPoint ip in solution[0])
+            foreach (Point64 ip in solution[0])
             {
                 retPts.Add(new Point((int)ip.X, (int)ip.Y));
             }
